@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎰 Казино</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .title {
+            color: #FFD700;
+            font-size: 48px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .info-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .balance {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .bet-amount {
+            font-size: 18px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .bet-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .bet-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .bet-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .bet-btn:active {
+            transform: translateY(0);
+        }
+
+        .slot-machine {
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .slots-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            perspective: 1000px;
+        }
+
+        .slot {
+            width: 90px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 4px solid #FFD700;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .slot-inner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.1s linear;
+        }
+
+        .slot-symbol {
+            width: 100%;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .spin-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 20px 50px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 40px rgba(245, 87, 108, 0.4);
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .spin-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 50px rgba(245, 87, 108, 0.6);
+        }
+
+        .spin-btn:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .spin-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .result-text {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-details {
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+
+        .win {
+            color: #27ae60;
+            animation: celebrate 0.5s ease-in-out;
+        }
+
+        .lose {
+            color: #e74c3c;
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            75% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        .jackpot {
+            animation: jackpot 1s infinite;
+        }
+
+        @keyframes jackpot {
+            0%, 100% { 
+                transform: scale(1);
+                color: #f39c12;
+            }
+            50% { 
+                transform: scale(1.2);
+                color: #e74c3c;
+            }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .particle {
+            position: absolute;
+            font-size: 24px;
+            animation: fall 3s linear forwards;
+            opacity: 0;
+        }
+
+        @keyframes fall {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="title">🎰 КАЗИНО 🎰</div>
+        
+        <div class="info-panel">
+            <div class="balance">💰 Баланс: <span id="balance">1000</span> монет</div>
+            <div class="bet-amount">Ставка: <span id="current-bet">10</span> монет</div>
+            <div class="bet-controls">
+                <button class="bet-btn" onclick="changeBet(5)">5</button>
+                <button class="bet-btn" onclick="changeBet(10)">10</button>
+                <button class="bet-btn" onclick="changeBet(25)">25</button>
+                <button class="bet-btn" onclick="changeBet(50)">50</button>
+                <button class="bet-btn" onclick="changeBet(100)">100</button>
+            </div>
+        </div>
+
+        <div class="slot-machine">
+            <div class="slots-container">
+                <div class="slot">
+                    <div class="slot-inner" id="slot1">
+                        <!-- Symbols will be generated by JS -->
+                    </div>
+                </div>
+                <div class="slot">
+                    <div class="slot-inner" id="slot2">
+                        <!-- Symbols will be generated by JS -->
+                    </div>
+                </div>
+                <div class="slot">
+                    <div class="slot-inner" id="slot3">
+                        <!-- Symbols will be generated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <button class="spin-btn" id="spin-btn" onclick="spin()">
+                🎰 КРУТИТЬ
+            </button>
+        </div>
+
+        <div class="result" id="result">
+            <div class="result-text">Нажмите "Крутить" для начала игры!</div>
+        </div>
+    </div>
+
+    <script>
+        // Telegram WebApp initialization
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+
+        // Game configuration
+        const symbols = ["🍒", "🍋", "🍊", "🍇", "💎", "7️⃣", "🔔", "⭐"];
+        let balance = 1000;
+        let currentBet = 10;
+        let isSpinning = false;
+
+        // Get user data from Telegram
+        if (tg.initDataUnsafe.user) {
+            // You can get user data here and sync with bot
+            console.log('User ID:', tg.initDataUnsafe.user.id);
+        }
+
+        // Initialize slots
+        function initializeSlots() {
+            for (let i = 1; i <= 3; i++) {
+                const slot = document.getElementById(`slot${i}`);
+                let symbolsHtml = '';
+                
+                // Create multiple symbols for scrolling effect
+                for (let j = 0; j < 30; j++) {
+                    const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                    symbolsHtml += `<div class="slot-symbol">${randomSymbol}</div>`;
+                }
+                
+                slot.innerHTML = symbolsHtml;
+            }
+        }
+
+        // Change bet amount
+        function changeBet(amount) {
+            if (isSpinning) return;
+            
+            if (amount > balance) {
+                showResult('lose', 'Недостаточно средств!', '');
+                tg.HapticFeedback.notificationOccurred('error');
+                return;
+            }
+            
+            currentBet = amount;
+            document.getElementById('current-bet').textContent = currentBet;
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        // Spin animation
+        async function spin() {
+            if (isSpinning) return;
+            
+            if (balance < currentBet) {
+                showResult('lose', 'Недостаточно средств!', 'Пополните баланс через /dep');
+                tg.HapticFeedback.notificationOccurred('error');
+                return;
+            }
+
+            isSpinning = true;
+            const spinBtn = document.getElementById('spin-btn');
+            spinBtn.disabled = true;
+            spinBtn.innerHTML = '<div class="loading"></div> Вращение...';
+
+            // Haptic feedback
+            tg.HapticFeedback.impactOccurred('medium');
+
+            // Clear previous result
+            document.getElementById('result').innerHTML = '<div class="result-text">🎲 Крутим барабаны...</div>';
+
+            // Animate slots
+            const durations = [2000, 2500, 3000]; // Different durations for each slot
+            const promises = [];
+
+            for (let i = 1; i <= 3; i++) {
+                promises.push(animateSlot(i, durations[i - 1]));
+            }
+
+            // Wait for all animations to complete
+            const results = await Promise.all(promises);
+
+            // Calculate result
+            calculateResult(results);
+
+            // Re-enable button
+            isSpinning = false;
+            spinBtn.disabled = false;
+            spinBtn.innerHTML = '🎰 КРУТИТЬ';
+        }
+
+        // Animate single slot
+        function animateSlot(slotNumber, duration) {
+            return new Promise((resolve) => {
+                const slot = document.getElementById(`slot${slotNumber}`);
+                const symbolHeight = 120;
+                const totalSymbols = 30;
+                
+                // Random final position
+                const finalIndex = Math.floor(Math.random() * symbols.length);
+                const finalSymbol = symbols[finalIndex];
+                
+                // Calculate scroll distance
+                const scrollDistance = (totalSymbols - 3) * symbolHeight + (finalIndex * symbolHeight);
+                
+                let startTime = null;
+                
+                function animate(currentTime) {
+                    if (!startTime) startTime = currentTime;
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // Easing function (ease-out)
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    const currentScroll = scrollDistance * easeOut;
+                    
+                    slot.style.transform = `translateY(-${currentScroll}px)`;
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        resolve(finalSymbol);
+                    }
+                }
+                
+                requestAnimationFrame(animate);
+            });
+        }
+
+        // Calculate game result
+        function calculateResult(results) {
+            const [r1, r2, r3] = results;
+            let winAmount = 0;
+            let multiplier = 0;
+            let resultText = '';
+            let resultClass = 'lose';
+
+            // Check for wins
+            if (r1 === r2 && r2 === r3) {
+                // Three of a kind
+                if (r1 === "💎") {
+                    multiplier = 50;
+                    resultText = "🎊 ДЖЕКПОТ! ТРИ АЛМАЗА! 🎊";
+                    resultClass = 'jackpot';
+                    createParticles('💎', 50);
+                } else if (r1 === "7️⃣") {
+                    multiplier = 30;
+                    resultText = "🎉 ТРОЙНАЯ СЕМЕРКА! 🎉";
+                    resultClass = 'win';
+                    createParticles('7️⃣', 30);
+                } else {
+                    multiplier = 10;
+                    resultText = "🎁 ВЫИГРЫШ! ТРИ В РЯД! 🎁";
+                    resultClass = 'win';
+                    createParticles('🎉', 20);
+                }
+            } else if (r1 === r2 || r2 === r3 || r1 === r3) {
+                // Two of a kind
+                multiplier = 2;
+                resultText = "✨ Небольшой выигрыш! ✨";
+                resultClass = 'win';
+                createParticles('✨', 10);
+            } else {
+                // Loss
+                resultText = "😔 Не повезло...";
+                resultClass = 'lose';
+            }
+
+            winAmount = currentBet * multiplier;
+            const profit = winAmount - currentBet;
+            balance = balance - currentBet + winAmount;
+
+            // Update balance display
+            document.getElementById('balance').textContent = balance;
+
+            // Show result
+            const details = `
+                Ставка: ${currentBet} монет<br>
+                ${winAmount > 0 ? `Выигрыш: ${winAmount} монет (×${multiplier})<br>` : ''}
+                ${profit > 0 ? `Прибыль: +${profit} монет` : `Убыток: ${profit} монет`}
+            `;
+
+            showResult(resultClass, resultText, details);
+
+            // Haptic feedback
+            if (multiplier >= 10) {
+                tg.HapticFeedback.notificationOccurred('success');
+            } else if (multiplier > 0) {
+                tg.HapticFeedback.impactOccurred('light');
+            } else {
+                tg.HapticFeedback.impactOccurred('rigid');
+            }
+
+            // Send result to bot (if needed)
+            sendResultToBot(results, winAmount, profit);
+        }
+
+        // Show result
+        function showResult(className, text, details) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <div class="result-text ${className}">${text}</div>
+                <div class="result-details">${details}</div>
+            `;
+        }
+
+        // Create particle effects
+        function createParticles(emoji, count) {
+            const container = document.getElementById('particles');
+            
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.textContent = emoji;
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 0.5 + 's';
+                    container.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        particle.remove();
+                    }, 3000);
+                }, i * 50);
+            }
+        }
+
+        // Send result to bot
+        function sendResultToBot(results, winAmount, profit) {
+            // Send data back to bot using WebApp
+            const data = {
+                results: results,
+                bet: currentBet,
+                winAmount: winAmount,
+                profit: profit,
+                newBalance: balance
+            };
+            
+            // You can send this data to your bot
+            tg.sendData(JSON.stringify(data));
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initializeSlots();
+            
+            // Sync balance from bot if available
+            if (tg.initDataUnsafe.start_param) {
+                const params = JSON.parse(decodeURIComponent(tg.initDataUnsafe.start_param));
+                if (params.balance) {
+                    balance = params.balance;
+                    document.getElementById('balance').textContent = balance;
+                }
+                if (params.bet) {
+                    currentBet = params.bet;
+                    document.getElementById('current-bet').textContent = currentBet;
+                }
+            }
+        });
+
+        // Set theme colors
+        tg.setHeaderColor('#667eea');
+        tg.setBackgroundColor('#667eea');
+    </script>
+</body>
+</html>
