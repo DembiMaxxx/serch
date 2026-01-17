@@ -32,36 +32,40 @@
         /* ===== TITLE ===== */
 
         .title-wrapper {
-            text-align: center;
             margin-bottom: 20px;
         }
 
-        .slot-emoji {
-            font-size: 44px;
-            margin: 6px 0;
+        .title-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .title-emoji {
+            font-size: 38px;
         }
 
         .title-text {
             font-size: 40px;
             font-weight: bold;
             color: #FFD700;
-            margin: 6px 0;
         }
 
-        .tg-username {
+        .author {
             margin-top: 6px;
-            font-size: 16px;
+            font-size: 15px;
             color: #ffffff;
-            opacity: 0.9;
+            opacity: 0.85;
         }
 
-        .tg-username a {
+        .author a {
             color: #ffffff;
             text-decoration: none;
             border-bottom: 1px dashed rgba(255,255,255,0.6);
         }
 
-        .tg-username a:active {
+        .author a:hover {
             opacity: 0.7;
         }
 
@@ -165,10 +169,15 @@
 
     <!-- TITLE -->
     <div class="title-wrapper">
-        <div class="slot-emoji">🎰</div>
-        <div class="title-text">КАЗИНО</div>
-        <div class="slot-emoji">🎰</div>
-        <div class="tg-username" id="tg-username"></div>
+        <div class="title-row">
+            <span class="title-emoji">🎰</span>
+            <span class="title-text">КАЗИНО</span>
+            <span class="title-emoji">🎰</span>
+        </div>
+
+        <div class="author">
+            by <a href="https://t.me/famecontrol" target="_blank">@famecontrol</a>
+        </div>
     </div>
 
     <!-- INFO -->
@@ -224,21 +233,6 @@
 
     const MAX_BET = 1000;
     const STEP = 5;
-
-    /* ===== USERNAME ===== */
-    if (tg.initDataUnsafe?.user) {
-        const user = tg.initDataUnsafe.user;
-        const container = document.getElementById('tg-username');
-
-        if (user.username) {
-            container.innerHTML =
-                `<a href="https://t.me/${user.username}" target="_blank">@${user.username}</a>`;
-        } else if (user.first_name) {
-            container.textContent = user.first_name;
-        } else {
-            container.textContent = 'Игрок';
-        }
-    }
 
     function clampBet(value) {
         value = Math.max(1, value);
