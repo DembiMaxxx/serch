@@ -338,15 +338,10 @@
         function initializeSlots() {
             for (let i = 1; i <= 3; i++) {
                 const slot = document.getElementById(`slot${i}`);
-                let symbolsHtml = '';
-                
-                // Create multiple symbols for scrolling effect
-                for (let j = 0; j < 30; j++) {
-                    const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-                    symbolsHtml += `<div class="slot-symbol">${randomSymbol}</div>`;
-                }
-                
-                slot.innerHTML = symbolsHtml;
+                // Показываем случайный символ при загрузке
+                const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                slot.innerHTML = `<div class="slot-symbol">${randomSymbol}</div>`;
+                slot.style.transform = 'translateY(0)';
             }
         }
 
@@ -411,14 +406,29 @@
             return new Promise((resolve) => {
                 const slot = document.getElementById(`slot${slotNumber}`);
                 const symbolHeight = 120;
-                const totalSymbols = 30;
                 
                 // Random final position
                 const finalIndex = Math.floor(Math.random() * symbols.length);
                 const finalSymbol = symbols[finalIndex];
                 
-                // Calculate scroll distance
-                const scrollDistance = (totalSymbols - 3) * symbolHeight + (finalIndex * symbolHeight);
+                // Полностью пересоздаем содержимое слота для корректного отображения
+                let symbolsHtml = '';
+                const spinSymbols = 20; // Количество символов для прокрутки
+                
+                // Генерируем случайные символы для прокрутки
+                for (let i = 0; i < spinSymbols; i++) {
+                    const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                    symbolsHtml += `<div class="slot-symbol">${randomSymbol}</div>`;
+                }
+                
+                // Добавляем финальный символ
+                symbolsHtml += `<div class="slot-symbol">${finalSymbol}</div>`;
+                
+                slot.innerHTML = symbolsHtml;
+                slot.style.transform = 'translateY(0)';
+                
+                // Calculate scroll distance к финальному символу
+                const scrollDistance = spinSymbols * symbolHeight;
                 
                 let startTime = null;
                 
@@ -436,6 +446,9 @@
                     if (progress < 1) {
                         requestAnimationFrame(animate);
                     } else {
+                        // Финальная позиция - показываем только результат
+                        slot.innerHTML = `<div class="slot-symbol">${finalSymbol}</div>`;
+                        slot.style.transform = 'translateY(0)';
                         resolve(finalSymbol);
                     }
                 }
